@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
     }
 
     private void getForecast() {
@@ -125,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Network Unavailable", Toast.LENGTH_LONG).show();
         }
     }
+
 
     private CurrentWeather getWeather(String jsonData) throws JSONException {
         CurrentWeather currentWeather = new CurrentWeather();
