@@ -2,6 +2,9 @@ package me.selinali.drizzle.ui;
 
 import android.app.WallpaperManager;
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.design.widget.Snackbar;
@@ -10,12 +13,14 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.OkHttpClient;
@@ -27,19 +32,39 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import me.selinali.drizzle.CurrentLocation;
 import me.selinali.drizzle.R;
 import me.selinali.drizzle.weather.CurrentWeather;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private CurrentWeather currentWeather;
+    private String weatherName;
+
+    private GoogleApiClient googleApiClient;
+    private CurrentLocation currentLocation;
+    private Location location;
 
     @Bind(R.id.current_weather_text)
     TextView currentWeatherText;
+
+    @Bind(R.id.set_background_button)
+    Button setBackgroundButton;
+
+    @Bind(R.id.location_text)
+    TextView locationText;
+
+    @Bind(R.id.get_location)
+    Button getLocationButton;
+
+    @Bind(R.id.current_location_text)
+    TextView currentLocationText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,33 +72,46 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        getForecast();
+        buildGoogleApiClient();
 
-        Button buttonSetWallpaper = (Button) findViewById(R.id.set_weather_button);
-        buttonSetWallpaper.setOnClickListener(new Button.OnClickListener() {
+        getLocationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showLocation();
+            }
+        });
+
+        double latitude = getLatitude();
+        double longitude = getLongitude();
+
+        getForecast(latitude, longitude);
+
+        try {
+            currentLocation = getCurrentLocation(latitude, longitude);
+            currentLocationText.setText(currentLocation.getCity());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        setBackgroundButton.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View arg0) {
-                WallpaperManager myWallpaperManager = WallpaperManager.getInstance(getApplicationContext());
+                WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
 
-                EditText setWeather = (EditText) findViewById(R.id.weather_text);
-                String weatherName = setWeather.getText().toString();
-
-
-                InputMethodManager manager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                manager.hideSoftInputFromWindow(setWeather.getWindowToken(), 0);
+                weatherName = currentWeather.getMain();
 
                 try {
-                    myWallpaperManager.setResource(getResources().getIdentifier(weatherName, "drawable", getPackageName())); // This returns the same integer value as R.drawable.weatherName
+                    wallpaperManager.setResource(getResources().getIdentifier(weatherName, "drawable", getPackageName())); // This returns the same integer value as R.drawable.weatherName
                     Snackbar.make(arg0, "Wallpaper set successfully.", Snackbar.LENGTH_LONG).show();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    errorMessage();
                 }
             }
         });
     }
 
-    private void getForecast() {
-        String forecastUrl = "http://api.openweathermap.org/data/2.5/weather?q=osaka,jp";
+    private void getForecast(double latitude, double longitude) {
+        String forecastUrl = "http://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude;
 
         if (networkIsAvailable()) {
 
@@ -104,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         String jsonData = response.body().string();
                         if (response.isSuccessful()) {
-                            //final String main = getMain(jsonData);
                             currentWeather = getWeather(jsonData);
                             runOnUiThread(new Runnable() {
                                 @Override
@@ -153,6 +190,92 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), "Error. Please try again.", Toast.LENGTH_LONG).show();
     }
 
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        //showLocation();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        googleApiClient.connect();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (googleApiClient != null) {
+            googleApiClient.connect();
+        }
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API).build();
+    }
+
+    public void showLocation() {
+        location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+
+        if (location != null) {
+            double latitude = location.getLatitude();
+            double longitude = location.getLongitude();
+
+            locationText.setText("Latitude: " + latitude + "\nLongitude: " + longitude);
+
+        } else {
+            locationText.setText("(Couldn't get the location. Make sure location is enabled on the device)");
+        }
+    }
+
+    public double getLatitude() {
+        location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+        if (location != null) {
+            return location.getLatitude();
+        }
+        return 0;
+    }
+
+    public double getLongitude() {
+        location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+        if (location != null) {
+            return location.getLongitude();
+        }
+        return 0;
+    }
+
+    private CurrentLocation getCurrentLocation(double latitude, double longitude) throws IOException {
+        CurrentLocation currentLocation = new CurrentLocation();
+
+        Geocoder geocoder;
+        List<Address> addresses;
+        geocoder = new Geocoder(this, Locale.getDefault());
+
+        addresses = geocoder.getFromLocation(latitude, longitude, 3);
+
+        if (addresses.size() > 0) {
+
+            String city = addresses.get(0).getLocality();
+            String province = addresses.get(0).getAdminArea();
+            String country = addresses.get(0).getCountryName();
+
+            currentLocation.setCity(city);
+            currentLocation.setProvince(province);
+            currentLocation.setCountry(country);
+
+            return currentLocation;
+        }
+
+        currentLocation.setCity("Couldn't detect location");
+        return currentLocation;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

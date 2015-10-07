@@ -25,4 +25,5 @@ dependencies {
     compile 'com.android.support:design:22.2.0'
     compile 'com.squareup.okhttp:okhttp:2.5.0'
     compile 'com.jakewharton:butterknife:7.0.1'
+    compile 'com.google.android.gms:play-services:7.8.0'
 }

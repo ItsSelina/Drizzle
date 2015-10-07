@@ -5,7 +5,7 @@ public class CurrentWeather {
     private String main;
 
     public String getMain() {
-        return main;
+        return main.toLowerCase();
     }
 
     public void setMain(String main) {

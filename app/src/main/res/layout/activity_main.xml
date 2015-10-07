@@ -8,29 +8,11 @@
         android:id="@+id/app_bar"
         layout="@layout/app_bar"/>
 
-    <EditText
-        android:id="@+id/weather_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/app_bar"
-        android:hint="Weather(rain, clouds)"/>
-
-    <Button
-        android:id="@+id/set_weather_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:background="@drawable/main_btn"
-        android:text="Change Background"
-        android:textColor="#fff"/>
-
     <TextView
-        android:id="@+id/location"
+        android:id="@+id/current_location_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/weather_text"
+        android:layout_below="@id/app_bar"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="70dp"
         android:text="Osaka, Japan"/>
@@ -39,8 +21,37 @@
         android:id="@+id/current_weather_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/location"
+        android:layout_below="@+id/current_location_text"
         android:layout_centerHorizontal="true"
         android:text="Current weather"/>
+
+    <TextView
+        android:id="@+id/location_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/current_weather_text"
+        android:layout_centerHorizontal="true"
+        android:text="Location"/>
+
+    <Button
+        android:id="@+id/get_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/set_background_button"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/main_btn"
+        android:text="Get Location"
+        android:textColor="#fff"/>
+
+    <Button
+        android:id="@+id/set_background_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/main_btn"
+        android:text="Change Background"
+        android:textColor="#fff"/>
 
 </RelativeLayout>
