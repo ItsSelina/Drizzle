@@ -19,7 +19,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
@@ -51,6 +50,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private CurrentLocation currentLocation;
     private Location location;
 
+    private double latitude;
+    private double longitude;
+
     @Bind(R.id.current_weather_text)
     TextView currentWeatherText;
 
@@ -81,13 +83,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
-        double latitude = getLatitude();
-        double longitude = getLongitude();
+        latitude = getLatitude();
+        longitude = getLongitude();
 
         getForecast(latitude, longitude);
 
         try {
-            currentLocation = getCurrentLocation(latitude, longitude);
+            currentLocation = getCurrentLocation();
             currentLocationText.setText(currentLocation.getCity());
         } catch (IOException e) {
             e.printStackTrace();
@@ -111,7 +113,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void getForecast(double latitude, double longitude) {
-        String forecastUrl = "http://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude;
+        //String forecastUrl = "http://api.openweathermap.org/data/2.5/weather?lat=43.7765881&lon=-79.3277382&appid=bd82977b86bf27fb59a04b61b657fb6f";
+        String forecastUrl = "http://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude + "&appid=4e0c5ddeedd010818e1ab8b9d7ca2ec0";
 
         if (networkIsAvailable()) {
 
@@ -251,14 +254,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return 0;
     }
 
-    private CurrentLocation getCurrentLocation(double latitude, double longitude) throws IOException {
+
+    private CurrentLocation getCurrentLocation() throws IOException {
         CurrentLocation currentLocation = new CurrentLocation();
 
-        Geocoder geocoder;
-        List<Address> addresses;
-        geocoder = new Geocoder(this, Locale.getDefault());
+        //latitude = 43.7765818;
+        //longitude = -79.3277357;
 
-        addresses = geocoder.getFromLocation(latitude, longitude, 3);
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
 
         if (addresses.size() > 0) {
 
@@ -273,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             return currentLocation;
         }
 
-        currentLocation.setCity("Couldn't detect location");
+        currentLocation.setCity(latitude + " " + longitude);
         return currentLocation;
     }
 

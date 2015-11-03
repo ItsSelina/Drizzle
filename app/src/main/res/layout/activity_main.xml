@@ -15,7 +15,7 @@
         android:layout_below="@id/app_bar"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="70dp"
-        android:text="Osaka, Japan"/>
+        android:text="City"/>
 
     <TextView
         android:id="@+id/current_weather_text"
