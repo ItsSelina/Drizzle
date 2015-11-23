@@ -3,9 +3,7 @@ package me.selinali.drizzle;
 public class CurrentLocation {
     private double latitude;
     private double longitude;
-    private String city;
-    private String province;
-    private String country;
+    private String address;
 
     public double getLatitude() {
         return latitude;
@@ -23,27 +21,11 @@ public class CurrentLocation {
         this.longitude = longitude;
     }
 
-    public String getCity() {
-        return city;
+    public String getAddress() {
+        return address;
     }
 
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getProvince() {
-        return province;
-    }
-
-    public void setProvince(String province) {
-        this.province = province;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
+    public void setAddress(String address) {
+        this.address = address;
     }
 }
