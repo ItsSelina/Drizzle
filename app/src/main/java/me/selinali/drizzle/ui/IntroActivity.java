@@ -26,14 +26,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import me.selinali.drizzle.CurrentLocation;
+import me.selinali.drizzle.model.CurrentLocation;
 import me.selinali.drizzle.R;
-import me.selinali.drizzle.weather.CurrentWeather;
+import me.selinali.drizzle.model.CurrentWeather;
 
 public class IntroActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -161,8 +162,9 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    String weather = currentWeather.getMain().substring(0, 1).toUpperCase() + currentWeather.getMain().substring(1);
-                                    weatherText.setText(weather);
+                                    weatherText.setText(getConditionName(currentWeather.getIconName()));
+                                    /*String weather = currentWeather.getMain().substring(0, 1).toUpperCase() + currentWeather.getMain().substring(1);
+                                    weatherText.setText(weather);*/
                                 }
                             });
                         } else {
@@ -185,7 +187,7 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
         JSONArray weather = forecast.getJSONArray("weather");
         JSONObject data = weather.getJSONObject(0);
 
-        currentWeather.setMain(data.getString("main"));
+        currentWeather.setIconName(data.getString("icon"));
 
         return currentWeather;
     }
@@ -211,5 +213,33 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
             latitude = location.getLatitude();
             longitude = location.getLongitude();
         }
+    }
+
+    public String getConditionName(String iconName) {
+        HashMap<String, String> map = new HashMap<>();
+        map.put("01d", "Clear");
+        map.put("01n", "Clear");
+        map.put("02d", "Few Clouds");
+        map.put("02n", "Few Clouds");
+        map.put("03d", "Scattered Clouds");
+        map.put("03n", "Scattered Clouds");
+        map.put("04d", "Broken Clouds");
+        map.put("04n", "Broken Clouds");
+        map.put("09d", "Shower Rain");
+        map.put("09n", "Shower Rain");
+        map.put("10d", "Rain");
+        map.put("10n", "Rain");
+        map.put("11d", "Thunderstorm");
+        map.put("11n", "Thunderstorm");
+        map.put("13d", "Snow");
+        map.put("13n", "Snow");
+        map.put("50d", "Mist");
+        map.put("50n", "Mist");
+
+        return map.get(iconName);
+    }
+
+    public boolean isDay(String iconName) {
+        return iconName.endsWith("d");
     }
 }
