@@ -1,13 +1,21 @@
 package me.selinali.drizzle.ui;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.app.WallpaperManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,26 +37,41 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import me.selinali.drizzle.AlarmReceiver;
 import me.selinali.drizzle.model.CurrentLocation;
 import me.selinali.drizzle.R;
 import me.selinali.drizzle.model.CurrentWeather;
 
 public class IntroActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
+    private static final String PREF_NAME = "me.selinali.drizzle.PREF";
+    private static final String CURRENT_ICON = "CURRENT_ICON";
+
+    SharedPreferences sharedPreferences;
+    String currentIcon;
+
     private Location location;
     private GoogleApiClient googleApiClient;
     private CurrentWeather currentWeather;
+
     private double latitude = 0;
     private double longitude = 0;
+
+    private AlarmManager alarmManager;
+    private PendingIntent pendingIntent;
 
     @Bind(R.id.location_edittext)
     EditText locationEditText;
 
     @Bind(R.id.weather_text)
     TextView weatherText;
+
+    @Bind(R.id.set_wallpaper_button)
+    Button setWallpaperButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +80,77 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
         ButterKnife.bind(this);
 
         buildGoogleApiClient();
+    }
+
+    public void onSetWallpaperClicked(View view) {
+
+        sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        currentIcon = sharedPreferences.getString(CURRENT_ICON, "empty");
+
+        int currentId = getResources().getIdentifier(currentIcon, "drawable", getPackageName());
+
+        String newWallpaperId = getRandomDrawableName(String.valueOf(currentId));
+        saveToSharedPreferences(newWallpaperId);
+
+        WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
+        try {
+            wallpaperManager.setResource(getResources().getIdentifier("c" + newWallpaperId, "drawable", getPackageName()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        alarmManager = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        intent.putExtra("CONDITION_NAME", getConditionName(currentWeather.getIconName()));
+        intent.putExtra("ICON_NAME", "c" + currentWeather.getIconName());
+
+        pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+                AlarmManager.INTERVAL_FIFTEEN_MINUTES, pendingIntent);
+        Snackbar.make(view, "Repeating alarm set successfully.", Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void saveToSharedPreferences(String newWallpaperId) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(CURRENT_ICON, newWallpaperId).apply();
+    }
+
+    public String getRandomDrawableName(String lastWallpaperId) {
+        String[] wallpaper = new String[] {
+                "01d",
+                "01n",
+                "02d",
+                "02n",
+                "03d",
+                "03n",
+                "04d",
+                "04n",
+                "09d",
+                "09n",
+                "10d",
+                "10n",
+                "11d",
+                "11n",
+                "13d",
+                "13n",
+                "50d",
+                "50n",
+        };
+
+        int min = 0;
+        int max = wallpaper.length;
+        int wallpaperNumber;
+        String newWallpaperId = lastWallpaperId;
+
+        while(newWallpaperId.equals(lastWallpaperId)) {
+            Random r = new Random();
+            wallpaperNumber = r.nextInt(max - min + 1) + min;
+            newWallpaperId = wallpaper[wallpaperNumber];
+        }
+
+        return newWallpaperId;
     }
 
     @Override
@@ -163,8 +257,6 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
                                 @Override
                                 public void run() {
                                     weatherText.setText(getConditionName(currentWeather.getIconName()));
-                                    /*String weather = currentWeather.getMain().substring(0, 1).toUpperCase() + currentWeather.getMain().substring(1);
-                                    weatherText.setText(weather);*/
                                 }
                             });
                         } else {
