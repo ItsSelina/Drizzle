@@ -1,4 +1,4 @@
-package me.selinali.drizzle;
+package me.selinali.drizzle.ui;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -41,6 +41,10 @@ import java.util.Random;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import me.selinali.drizzle.alarm.AlarmReceiver;
+import me.selinali.drizzle.model.CurrentLocation;
+import me.selinali.drizzle.model.CurrentWeather;
+import me.selinali.drizzle.R;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 

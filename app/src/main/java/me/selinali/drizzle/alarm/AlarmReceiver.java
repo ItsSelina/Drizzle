@@ -1,4 +1,4 @@
-package me.selinali.drizzle;
+package me.selinali.drizzle.alarm;
 
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;

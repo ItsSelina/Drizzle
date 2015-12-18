@@ -1,4 +1,4 @@
-package me.selinali.drizzle;
+package me.selinali.drizzle.model;
 
 public class CurrentLocation {
     private double latitude;
