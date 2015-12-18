@@ -1,4 +1,4 @@
-package me.selinali.drizzle.model;
+package me.selinali.drizzle;
 
 
 public class CurrentWeather {

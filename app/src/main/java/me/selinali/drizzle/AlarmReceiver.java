@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Random;
@@ -19,6 +20,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        Toast.makeText(context, "Tada!", Toast.LENGTH_SHORT).show();
+
         WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
 
         sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -32,7 +35,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         try {
             wallpaperManager.setResource(context.getResources().getIdentifier("c" + newWallpaperId, "drawable", context.getPackageName()));
         } catch (IOException e) {
-            e.printStackTrace();
+            Toast.makeText(context, "Could not change wallpaper", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -64,7 +67,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         };
 
         int min = 0;
-        int max = wallpaper.length;
+        int max = wallpaper.length - 1;
         int wallpaperNumber;
         String newWallpaperId = lastWallpaperId;
 

@@ -1,4 +1,4 @@
-package me.selinali.drizzle.ui;
+package me.selinali.drizzle;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -11,9 +11,9 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,12 +41,8 @@ import java.util.Random;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import me.selinali.drizzle.AlarmReceiver;
-import me.selinali.drizzle.model.CurrentLocation;
-import me.selinali.drizzle.R;
-import me.selinali.drizzle.model.CurrentWeather;
 
-public class IntroActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
     private static final String PREF_NAME = "me.selinali.drizzle.PREF";
     private static final String CURRENT_ICON = "CURRENT_ICON";
@@ -73,6 +69,9 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
     @Bind(R.id.set_wallpaper_button)
     Button setWallpaperButton;
 
+    private AlarmManager alarmMgr;
+    private PendingIntent alarmIntent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,6 +82,14 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
     public void onSetWallpaperClicked(View view) {
+        alarmMgr = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        alarmIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+
+        alarmMgr.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + 10 * 1000,
+                60 * 1000, alarmIntent);
+        Toast.makeText(this, "Alarm set", Toast.LENGTH_SHORT).show();
 
         sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         currentIcon = sharedPreferences.getString(CURRENT_ICON, "empty");
@@ -98,18 +105,6 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        alarmManager = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, AlarmReceiver.class);
-        intent.putExtra("CONDITION_NAME", getConditionName(currentWeather.getIconName()));
-        intent.putExtra("ICON_NAME", "c" + currentWeather.getIconName());
-
-        pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-
-        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                AlarmManager.INTERVAL_FIFTEEN_MINUTES,
-                AlarmManager.INTERVAL_FIFTEEN_MINUTES, pendingIntent);
-        Snackbar.make(view, "Repeating alarm set successfully.", Snackbar.LENGTH_SHORT).show();
     }
 
     private void saveToSharedPreferences(String newWallpaperId) {
@@ -118,7 +113,7 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
     }
 
     public String getRandomDrawableName(String lastWallpaperId) {
-        String[] wallpaper = new String[] {
+        String[] wallpaper = new String[]{
                 "01d",
                 "01n",
                 "02d",
@@ -144,7 +139,7 @@ public class IntroActivity extends AppCompatActivity implements GoogleApiClient.
         int wallpaperNumber;
         String newWallpaperId = lastWallpaperId;
 
-        while(newWallpaperId.equals(lastWallpaperId)) {
+        while (newWallpaperId.equals(lastWallpaperId)) {
             Random r = new Random();
             wallpaperNumber = r.nextInt(max - min + 1) + min;
             newWallpaperId = wallpaper[wallpaperNumber];
