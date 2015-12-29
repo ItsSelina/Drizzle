@@ -7,8 +7,4 @@
         <item name="android:colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="customToolBar" parent="ThemeOverlay.AppCompat.Dark">
-        <item name="android:elevation">2dp</item>
-    </style>
-
 </resources>
