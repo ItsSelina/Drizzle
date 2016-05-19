@@ -19,40 +19,43 @@ import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
+  private static final String TAG = MainActivity.class.getSimpleName();
 
-    @Bind(R.id.temperature_textview) TextView mTemperatureTextView;
-    @Bind(R.id.condition_textview) TextView mConditionTextView;
-    @Bind(R.id.location_textview) TextView mLocationTextView;
+  @Bind(R.id.temperature_textview) TextView mTemperatureTextView;
+  @Bind(R.id.condition_textview) TextView mConditionTextView;
+  @Bind(R.id.location_textview) TextView mLocationTextView;
 
-    private Subscription mWeatherSubscription;
+  private Subscription mWeatherSubscription;
 
-    @Override protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+    ButterKnife.bind(this);
 
-        Location location = LocationProvider.getLocation(this);
-        mWeatherSubscription = WeatherApi.instance().getWeather(location)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::bind, this::handleError);
+    Location location = LocationProvider.getLocation(this);
+    mLocationTextView.setText(LocationProvider.formatLocation(location, this));
+    mWeatherSubscription = WeatherApi.instance().getWeather(location)
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(this::bind, this::handleError);
+  }
+
+  private void bind(WeatherResponse weatherResponse) {
+    mTemperatureTextView.setText(String.format("%.2f °", weatherResponse.getTemperature()));
+    mConditionTextView.setText(weatherResponse.getBlurb());
+  }
+
+  private void handleError(Throwable throwable) {
+    Log.d(TAG, "Unable to fetch weather for current location", throwable);
+    Toast.makeText(this, "Fuck!", Toast.LENGTH_LONG).show();
+  }
+
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    if (mWeatherSubscription != null && !mWeatherSubscription.isUnsubscribed()) {
+      mWeatherSubscription.unsubscribe();
     }
-
-    private void bind(WeatherResponse weatherResponse) {
-        mTemperatureTextView.setText(String.format("%.2f °", weatherResponse.getTemperature()));
-        mConditionTextView.setText(weatherResponse.getBlurb());
-    }
-
-    private void handleError(Throwable throwable) {
-        Log.d(TAG, "Unable to fetch weather for current location", throwable);
-        Toast.makeText(this, "Fuck!", Toast.LENGTH_LONG).show();
-    }
-
-    @Override protected void onDestroy() {
-        super.onDestroy();
-        if (mWeatherSubscription != null && !mWeatherSubscription.isUnsubscribed()) {
-            mWeatherSubscription.unsubscribe();
-        }
-    }
+  }
 }
