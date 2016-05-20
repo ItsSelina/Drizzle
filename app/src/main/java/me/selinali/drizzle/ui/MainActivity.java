@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
   }
 
   private void bind(WeatherResponse weatherResponse) {
-    mTemperatureTextView.setText(String.format("%.2f °", weatherResponse.getTemperature()));
+    mTemperatureTextView.setText(String.valueOf(Math.round(weatherResponse.getTemperature())) + "°");
     mConditionTextView.setText(weatherResponse.getBlurb());
   }
 
