@@ -1,7 +1,5 @@
 package me.selinali.drizzle.api;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +28,6 @@ public class WeatherResponse {
     BLURBS.put("50d", "Mist");
     BLURBS.put("50n", "Mist");
   }
-
 
   public class Main {
     public Double temp;
